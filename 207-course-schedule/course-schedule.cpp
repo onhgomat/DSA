@@ -1,39 +1,36 @@
 class Solution {
-public:
-    bool canFinish(int numCourses, vector<vector<int>>& prerequisites) {
-        
-        vector<vector<int>> G(numCourses);   // Adjacency list
-        vector<int> degree(numCourses, 0);   // In-degree array
-        
-        // Build graph
-        for (auto &e : prerequisites) {
-            G[e[1]].push_back(e[0]);  // edge: e[1] -> e[0]
-            degree[e[0]]++;           // increase in-degree
-        }
-        
-        queue<int> q;
-        
-        // Push nodes with 0 in-degree
-        for (int i = 0; i < numCourses; i++) {
-            if (degree[i] == 0)
-                q.push(i);
-        }
-        
-        int count = 0;
-        
-        // BFS
-        while (!q.empty()) {
-            int node = q.front();
-            q.pop();
-            count++;
-            
-            for (int neigh : G[node]) {
-                degree[neigh]--;
-                if (degree[neigh] == 0)
-                    q.push(neigh);
+private:
+    bool dfs(int node, const vector<vector<int>>& adj, vector<bool>& vis, vector<bool>& path) {
+        vis[node] = path[node] = true;
+
+        for (int next : adj[node]) {
+            if (!vis[next]) {
+                if (dfs(next, adj, vis, path)) return true;
+            } else if (path[next]) {
+                return true;
             }
         }
         
-        return count == numCourses;
+        path[node] = false;
+        return false;
+    }
+
+public:
+    bool canFinish(int numCourses, vector<vector<int>>& prerequisites) {
+        vector<vector<int>> adj(numCourses);
+        for (const auto& pre : prerequisites) {
+            adj[pre[1]].push_back(pre[0]);
+        }
+
+        vector<bool> vis(numCourses, false);
+        vector<bool> path(numCourses, false);
+
+        for (int i = 0; i < numCourses; ++i) {
+            if (!vis[i]) {
+                if (dfs(i, adj, vis, path)) return false;
+            }
+        }
+
+        return true;
     }
 };
